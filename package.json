@@ -1,0 +1,44 @@
+{
+  "name": "zod-cli-flags",
+  "version": "0.1.0",
+  "description": "Define a CLI's flags as a single Zod schema and parse argv into a typed result.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "test": "vitest run",
+    "typecheck": "tsc -b --force",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "prettier": "^3.8.3",
+    "typescript": "^5",
+    "vitest": "^4",
+    "zod": "^4.4.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/figulusproject/zod-cli-flags"
+  },
+  "author": "The Figulus Project",
+  "license": "MIT"
+}

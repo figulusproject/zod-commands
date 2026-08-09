@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.2] - 2026-08-09
+
+### Added
+
+- `placeholder?: string` flag descriptor field: overrides the `<value>` placeholder in the auto-generated usage string (e.g. `<dir>`) for a value-taking flag.
+
 ## [1.0.1] - 2026-08-09
 
 ### Added

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.1] - 2026-08-09
+
+### Added
+
+- `positionals` now also accepts `{ schema, label }`; when a `label` is given, `buildUsage()`/`cli.usage` prepends it before the flag list instead of silently omitting positionals.
+
 ## [1.0.0] - 2026-08-08
 
 ### Added

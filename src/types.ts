@@ -18,6 +18,12 @@ export interface FlagDescriptor<T = unknown> {
 
 export type FlagDescriptors = Record<string, FlagDescriptor<any>>;
 
+export interface PositionalsDescriptor<T = unknown> {
+  schema: z.ZodType<T, any>;
+  /** Shown in the auto-generated usage string, prepended before the flags. */
+  label?: string;
+}
+
 export interface CliIssue {
   path: (string | number)[];
   message: string;

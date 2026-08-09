@@ -258,6 +258,37 @@ describe("defineCli - positionals", () => {
     const result = cli.parse(["--output", "/tmp", "stray"]);
     expect(result.success).toBe(false);
   });
+
+  it("still accepts a bare schema (no label) and omits positionals from usage", () => {
+    const cli = defineCli({
+      flags: { output: { schema: z.string() } },
+      positionals: z.array(z.string()),
+    });
+    expect(cli.usage).toBe("Usage: --output <value>");
+
+    const result = cli.parse(["--output", "/tmp", "one", "two"]);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.positionals).toEqual(["one", "two"]);
+  });
+
+  it("prepends the label before the flags when positionals carry one", () => {
+    const cli = defineCli({
+      flags: { output: { schema: z.string() } },
+      positionals: {
+        schema: z
+          .array(z.string())
+          .length(2)
+          .transform(([source, destination]) => ({ source, destination })),
+        label: "<source> <destination>",
+      },
+    });
+    expect(cli.usage).toBe("Usage: <source> <destination> --output <value>");
+
+    const result = cli.parse(["--output", "/tmp", "a", "b"]);
+    expect(result.success).toBe(true);
+    if (result.success)
+      expect(result.positionals).toEqual({ source: "a", destination: "b" });
+  });
 });
 
 describe("defineCli - parseOrExit", () => {

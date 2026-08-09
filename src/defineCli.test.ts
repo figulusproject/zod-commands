@@ -271,6 +271,20 @@ describe("defineCli - positionals", () => {
     if (result.success) expect(result.positionals).toEqual(["one", "two"]);
   });
 
+  it("substitutes a flag's placeholder into the auto-generated usage", () => {
+    const cli = defineCli({
+      flags: {
+        output: { schema: z.string(), placeholder: "dir" },
+        tag: {
+          schema: z.array(z.string()).default([]),
+          multiple: true,
+          placeholder: "tag",
+        },
+      },
+    });
+    expect(cli.usage).toBe("Usage: --output <dir> [--tag <tag>...]");
+  });
+
   it("prepends the label before the flags when positionals carry one", () => {
     const cli = defineCli({
       flags: { output: { schema: z.string() } },

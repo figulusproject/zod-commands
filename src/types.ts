@@ -14,6 +14,8 @@ export interface FlagDescriptor<T = unknown> {
   negatable?: boolean;
   /** Shown in the auto-generated usage string. */
   description?: string;
+  /** Value placeholder in the auto-generated usage string, e.g. "dir" for <dir>. Defaults to "value". */
+  placeholder?: string;
 }
 
 export type FlagDescriptors = Record<string, FlagDescriptor<any>>;

@@ -85,6 +85,12 @@ cli.parse(argv, overrideSchema);
 
 A schema without `.optional()`/`.default()` is required - omitting the flag is a parse error, and it's shown without brackets in the auto-generated usage string. `.optional()`/`.default()` short-circuit on a missing flag before any coercion/transform runs, so an omitted flag resolves to `undefined`/the default rather than failing (e.g. on `Number(undefined)`).
 
+The `<value>` placeholder shown for value-taking flags can be overridden per-flag with `placeholder`:
+
+```ts
+dir: { schema: z.string(), placeholder: "dir" } // --dir <dir>
+```
+
 **Booleans**: `negatable: true` only applies to a (possibly `.optional()`/`.default()`-wrapped) `z.boolean()` and throws at `defineCli()` time on anything else. `z.stringbool()` parses `"true"`/`"1"`/`"yes"`/`"on"`/`"y"`/`"enabled"` (case-insensitive) as `true` and their negatives as `false` - don't reach for `z.coerce.boolean()` instead, it's plain JS truthiness, so `z.coerce.boolean().parse("false")` is `true` (any non-empty string is truthy). A union of boolean literals doesn't behave like `z.boolean()` either: only a bare `z.boolean()` registers a presence-style parseArgs boolean, so `z.union([z.literal(true), z.literal(false)])` is registered as a value-taking string flag, and fails against the literal string `"true"` it would actually receive.
 
 ```ts

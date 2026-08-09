@@ -5,6 +5,7 @@ interface UsageFlag {
     multiple?: boolean;
     negatable?: boolean;
     description?: string;
+    placeholder?: string;
   };
   isBoolean: boolean;
   isOptional: boolean;
@@ -26,7 +27,10 @@ export function buildUsage(
     } else if (isBoolean) {
       core = alias;
     } else {
-      const value = descriptor.multiple ? "<value>..." : "<value>";
+      const placeholder = descriptor.placeholder ?? "value";
+      const value = descriptor.multiple
+        ? `<${placeholder}>...`
+        : `<${placeholder}>`;
       core = `${alias} ${value}`;
     }
 

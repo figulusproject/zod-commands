@@ -7,4 +7,5 @@ export type {
   CliIssue,
   CliParseError,
   ParseResult,
+  PositionalsDescriptor,
 } from "./types.js";

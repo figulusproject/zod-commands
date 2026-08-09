@@ -11,7 +11,10 @@ interface UsageFlag {
 }
 
 // Auto-generated default for cli.usage; override via defineCli({ usage: "..." }).
-export function buildUsage(resolved: UsageFlag[]): string {
+export function buildUsage(
+  resolved: UsageFlag[],
+  positionalsLabel?: string,
+): string {
   const parts = resolved.map(({ long, descriptor, isBoolean, isOptional }) => {
     const alias = descriptor.short
       ? `--${long}/-${descriptor.short}`
@@ -29,5 +32,6 @@ export function buildUsage(resolved: UsageFlag[]): string {
 
     return isOptional || descriptor.negatable ? `[${core}]` : core;
   });
-  return `Usage: ${parts.join(" ")}`;
+  const allParts = positionalsLabel ? [positionalsLabel, ...parts] : parts;
+  return `Usage: ${allParts.join(" ")}`;
 }

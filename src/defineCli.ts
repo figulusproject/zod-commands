@@ -9,6 +9,7 @@ import type {
   FlagDescriptors,
   FlagRawValue,
   ParseResult,
+  PositionalsDescriptor,
 } from "./types.js";
 import { buildUsage } from "./usage.js";
 
@@ -87,25 +88,44 @@ function toCliIssues(error: z.ZodError): CliIssue[] {
   }));
 }
 
+type PositionalsInput = z.ZodType | PositionalsDescriptor;
+
+type SchemaOf<TPositionalsInput> =
+  TPositionalsInput extends PositionalsDescriptor<infer T>
+    ? z.ZodType<T, any>
+    : TPositionalsInput extends z.ZodType
+      ? TPositionalsInput
+      : undefined;
+
+function resolvePositionals(positionals: PositionalsInput | undefined): {
+  schema?: z.ZodType;
+  label?: string;
+} {
+  if (positionals === undefined) return {};
+  if (positionals instanceof z.ZodType) return { schema: positionals };
+  return { schema: positionals.schema, label: positionals.label };
+}
+
 export interface DefineCliOptions<
   TFlags extends FlagDescriptors,
-  TPositionalsSchema extends z.ZodType | undefined,
+  TPositionalsInput extends PositionalsInput | undefined,
 > {
   flags: TFlags;
-  positionals?: TPositionalsSchema;
+  positionals?: TPositionalsInput;
   usage?: string;
 }
 
 type InferFlags<TFlags extends FlagDescriptors> = {
   [K in keyof TFlags]: z.infer<TFlags[K]["schema"]>;
 };
-type InferPositionals<TPositionalsSchema> = TPositionalsSchema extends z.ZodType
-  ? z.infer<TPositionalsSchema>
-  : string[];
+type InferPositionals<TPositionalsInput> =
+  SchemaOf<TPositionalsInput> extends z.ZodType
+    ? z.infer<SchemaOf<TPositionalsInput>>
+    : string[];
 
 export interface CliDefinition<
   TFlags extends FlagDescriptors,
-  TPositionalsSchema extends z.ZodType | undefined,
+  TPositionalsInput extends PositionalsInput | undefined,
 > {
   flagsSchema: z.ZodObject<{ [K in keyof TFlags]: TFlags[K]["schema"] }>;
   parseArgsOptions: Record<string, ParseArgsOptionDescriptor>;
@@ -113,21 +133,22 @@ export interface CliDefinition<
   parse<TOut = InferFlags<TFlags>>(
     argv: string[],
     overrideFlagsSchema?: z.ZodType<TOut, any>,
-  ): ParseResult<TOut, InferPositionals<TPositionalsSchema>>;
+  ): ParseResult<TOut, InferPositionals<TPositionalsInput>>;
   parseOrExit<TOut = InferFlags<TFlags>>(
     argv: string[],
     overrideFlagsSchema?: z.ZodType<TOut, any>,
-  ): { data: TOut; positionals: InferPositionals<TPositionalsSchema> };
+  ): { data: TOut; positionals: InferPositionals<TPositionalsInput> };
 }
 
 export function defineCli<
   TFlags extends FlagDescriptors,
-  TPositionalsSchema extends z.ZodType | undefined = undefined,
+  TPositionalsInput extends PositionalsInput | undefined = undefined,
 >(
-  def: DefineCliOptions<TFlags, TPositionalsSchema>,
-): CliDefinition<TFlags, TPositionalsSchema> {
+  def: DefineCliOptions<TFlags, TPositionalsInput>,
+): CliDefinition<TFlags, TPositionalsInput> {
   const resolved = resolveFlags(def.flags);
   const parseArgsOptions = buildParseArgsOptions(resolved);
+  const positionalsConfig = resolvePositionals(def.positionals);
 
   const shape = Object.fromEntries(
     resolved.map(({ key, descriptor }) => [key, descriptor.schema]),
@@ -145,19 +166,20 @@ export function defineCli<
         isBoolean,
         isOptional: isOptionalFlag(descriptor.schema),
       })),
+      positionalsConfig.label,
     );
 
   function parse<TOut = InferFlags<TFlags>>(
     argv: string[],
     overrideFlagsSchema?: z.ZodType<TOut, any>,
-  ): ParseResult<TOut, InferPositionals<TPositionalsSchema>> {
+  ): ParseResult<TOut, InferPositionals<TPositionalsInput>> {
     let values: Record<string, FlagRawValue>;
     let positionalsRaw: string[];
     try {
       const parsed = parseArgs({
         args: normalizeArgv(argv),
         options: parseArgsOptions,
-        allowPositionals: def.positionals !== undefined,
+        allowPositionals: positionalsConfig.schema !== undefined,
         strict: true,
       });
       values = parsed.values as Record<string, FlagRawValue>;
@@ -185,8 +207,8 @@ export function defineCli<
       any
     >;
     const flagsResult = schemaToUse.safeParse(raw);
-    const positionalsResult = def.positionals
-      ? def.positionals.safeParse(positionalsRaw)
+    const positionalsResult = positionalsConfig.schema
+      ? positionalsConfig.schema.safeParse(positionalsRaw)
       : { success: true as const, data: positionalsRaw };
 
     if (!flagsResult.success || !positionalsResult.success) {
@@ -209,14 +231,14 @@ export function defineCli<
       success: true,
       data: flagsResult.data,
       positionals:
-        positionalsResult.data as InferPositionals<TPositionalsSchema>,
+        positionalsResult.data as InferPositionals<TPositionalsInput>,
     };
   }
 
   function parseOrExit<TOut = InferFlags<TFlags>>(
     argv: string[],
     overrideFlagsSchema?: z.ZodType<TOut, any>,
-  ): { data: TOut; positionals: InferPositionals<TPositionalsSchema> } {
+  ): { data: TOut; positionals: InferPositionals<TPositionalsInput> } {
     const result = parse(argv, overrideFlagsSchema);
     if (!result.success) {
       console.error(result.error.message);

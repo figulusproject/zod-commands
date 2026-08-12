@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- `exclusiveGroups` option on `defineCli()`: marks a set of flags as mutually exclusive (at most one, or exactly one with `required: true`), enforced at parse time and rendered in the auto-generated usage string as `(--a <value> | --b <value>)` or `[--a <value> | --b <value>]`.
+
 ## [1.0.2] - 2026-08-09
 
 ### Added

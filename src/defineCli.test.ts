@@ -305,6 +305,125 @@ describe("defineCli - positionals", () => {
   });
 });
 
+describe("defineCli - exclusiveGroups", () => {
+  it("allows neither, either, but not both members of an optional group", () => {
+    const cli = defineCli({
+      flags: {
+        ids: { schema: z.array(z.string()).optional(), multiple: true },
+        idsFile: { schema: z.string().optional(), long: "ids-file" },
+      },
+      exclusiveGroups: [{ flags: ["ids", "idsFile"] }],
+    });
+
+    expect(cli.parse([]).success).toBe(true);
+    expect(cli.parse(["--ids", "a"]).success).toBe(true);
+    expect(cli.parse(["--ids-file", "/tmp/x"]).success).toBe(true);
+
+    const both = cli.parse(["--ids", "a", "--ids-file", "/tmp/x"]);
+    expect(both.success).toBe(false);
+    if (!both.success) {
+      expect(both.error.message).toMatch(
+        /--ids and --ids-file are mutually exclusive\./,
+      );
+      expect(both.error.issues).toEqual([]);
+    }
+  });
+
+  it("requires exactly one member of a required group", () => {
+    const cli = defineCli({
+      flags: {
+        ids: { schema: z.array(z.string()).optional(), multiple: true },
+        idsFile: { schema: z.string().optional(), long: "ids-file" },
+      },
+      exclusiveGroups: [{ flags: ["ids", "idsFile"], required: true }],
+    });
+
+    const none = cli.parse([]);
+    expect(none.success).toBe(false);
+    if (!none.success) {
+      expect(none.error.message).toMatch(
+        /One of --ids or --ids-file is required\./,
+      );
+    }
+
+    expect(cli.parse(["--ids", "a"]).success).toBe(true);
+    expect(cli.parse(["--ids", "a", "--ids-file", "/tmp/x"]).success).toBe(
+      false,
+    );
+  });
+
+  it("renders a required group as parens and an optional group as brackets in usage", () => {
+    const requiredCli = defineCli({
+      flags: {
+        ids: {
+          schema: z.array(z.string()).optional(),
+          multiple: true,
+          placeholder: "id",
+        },
+        idsFile: { schema: z.string().optional(), long: "ids-file" },
+      },
+      exclusiveGroups: [{ flags: ["ids", "idsFile"], required: true }],
+    });
+    expect(requiredCli.usage).toBe(
+      "Usage: (--ids <id>... | --ids-file <value>)",
+    );
+
+    const optionalCli = defineCli({
+      flags: {
+        ids: { schema: z.array(z.string()).optional(), multiple: true },
+        idsFile: { schema: z.string().optional(), long: "ids-file" },
+      },
+      exclusiveGroups: [{ flags: ["ids", "idsFile"] }],
+    });
+    expect(optionalCli.usage).toBe(
+      "Usage: [--ids <value>... | --ids-file <value>]",
+    );
+  });
+
+  it("throws at defineCli() time for a group with fewer than 2 flags", () => {
+    expect(() =>
+      defineCli({
+        flags: { ids: { schema: z.array(z.string()).optional() } },
+        exclusiveGroups: [{ flags: ["ids"] }],
+      }),
+    ).toThrow(/at least 2 flags/);
+  });
+
+  it("throws at defineCli() time for an unknown flag reference", () => {
+    expect(() =>
+      defineCli({
+        flags: { ids: { schema: z.array(z.string()).optional() } },
+        exclusiveGroups: [{ flags: ["ids", "bogus" as never] }],
+      }),
+    ).toThrow(/unknown flag "bogus"/);
+  });
+
+  it("throws at defineCli() time when a flag appears in more than one group", () => {
+    expect(() =>
+      defineCli({
+        flags: {
+          a: { schema: z.string().optional() },
+          b: { schema: z.string().optional() },
+          c: { schema: z.string().optional() },
+        },
+        exclusiveGroups: [{ flags: ["a", "b"] }, { flags: ["a", "c"] }],
+      }),
+    ).toThrow(/more than one exclusiveGroups group/);
+  });
+
+  it("throws at defineCli() time when a group member's schema isn't optional/default", () => {
+    expect(() =>
+      defineCli({
+        flags: {
+          ids: { schema: z.array(z.string()) },
+          idsFile: { schema: z.string().optional() },
+        },
+        exclusiveGroups: [{ flags: ["ids", "idsFile"] }],
+      }),
+    ).toThrow(/must be \.optional\(\)\/\.default\(\)/);
+  });
+});
+
 describe("defineCli - parseOrExit", () => {
   const cli = defineCli({ flags: { output: { schema: z.string() } } });
   let exitSpy: ReturnType<typeof vi.spyOn>;

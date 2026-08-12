@@ -4,6 +4,7 @@ export type {
   FlagDescriptor,
   FlagDescriptors,
   FlagRawValue,
+  ExclusiveGroup,
   CliIssue,
   CliParseError,
   ParseResult,

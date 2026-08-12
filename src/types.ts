@@ -20,6 +20,14 @@ export interface FlagDescriptor<T = unknown> {
 
 export type FlagDescriptors = Record<string, FlagDescriptor<any>>;
 
+export interface ExclusiveGroup<
+  TFlags extends FlagDescriptors = FlagDescriptors,
+> {
+  flags: (keyof TFlags)[];
+  /** If true, exactly one flag in the group must be provided. Defaults to false (at most one). */
+  required?: boolean;
+}
+
 export interface PositionalsDescriptor<T = unknown> {
   schema: z.ZodType<T, any>;
   /** Shown in the auto-generated usage string, prepended before the flags. */

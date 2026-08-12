@@ -2,9 +2,10 @@ import type { ParseArgsOptionDescriptor } from "node:util";
 import { parseArgs } from "node:util";
 import { z } from "zod";
 import { isBooleanSchema, isOptionalFlag } from "./introspect.js";
-import { kebabCase } from "./formatting.js";
+import { joinWithConjunction, kebabCase } from "./formatting.js";
 import type {
   CliIssue,
+  ExclusiveGroup,
   FlagDescriptor,
   FlagDescriptors,
   FlagRawValue,
@@ -49,6 +50,63 @@ function buildParseArgsOptions(
     }
   }
   return options;
+}
+
+function validateExclusiveGroups(
+  groups: ExclusiveGroup[],
+  flags: FlagDescriptors,
+): void {
+  const seen = new Set<string>();
+  for (const group of groups) {
+    if (group.flags.length < 2) {
+      throw new Error(
+        `zod-cli-flags: exclusiveGroups group must reference at least 2 flags, got: [${group.flags.join(", ")}].`,
+      );
+    }
+    for (const key of group.flags) {
+      const flagKey = key as string;
+      if (!(flagKey in flags)) {
+        throw new Error(
+          `zod-cli-flags: exclusiveGroups references unknown flag "${flagKey}".`,
+        );
+      }
+      if (seen.has(flagKey)) {
+        throw new Error(
+          `zod-cli-flags: flag "${flagKey}" cannot appear in more than one exclusiveGroups group.`,
+        );
+      }
+      seen.add(flagKey);
+      if (!isOptionalFlag(flags[flagKey]!.schema)) {
+        throw new Error(
+          `zod-cli-flags: flag "${flagKey}" in an exclusiveGroups group must be .optional()/.default(), since the group requires other members to be omitted.`,
+        );
+      }
+    }
+  }
+}
+
+function checkExclusiveGroups(
+  groups: ExclusiveGroup[],
+  raw: Record<string, unknown>,
+  longOf: Map<string, string>,
+): string[] {
+  const errors: string[] = [];
+  for (const group of groups) {
+    const keys = group.flags as string[];
+    const present = keys.filter((key) => raw[key] !== undefined);
+    const longsOf = (list: string[]) =>
+      list.map((key) => `--${longOf.get(key)}`);
+    if (present.length > 1) {
+      errors.push(
+        `${joinWithConjunction(longsOf(present), "and")} are mutually exclusive.`,
+      );
+    } else if (group.required && present.length === 0) {
+      errors.push(
+        `One of ${joinWithConjunction(longsOf(keys), "or")} is required.`,
+      );
+    }
+  }
+  return errors;
 }
 
 function buildRawFlags(
@@ -112,6 +170,7 @@ export interface DefineCliOptions<
 > {
   flags: TFlags;
   positionals?: TPositionalsInput;
+  exclusiveGroups?: ExclusiveGroup<TFlags>[];
   usage?: string;
 }
 
@@ -149,6 +208,9 @@ export function defineCli<
   const resolved = resolveFlags(def.flags);
   const parseArgsOptions = buildParseArgsOptions(resolved);
   const positionalsConfig = resolvePositionals(def.positionals);
+  const exclusiveGroups = (def.exclusiveGroups ?? []) as ExclusiveGroup[];
+  validateExclusiveGroups(exclusiveGroups, def.flags);
+  const longOf = new Map(resolved.map(({ key, long }) => [key, long]));
 
   const shape = Object.fromEntries(
     resolved.map(({ key, descriptor }) => [key, descriptor.schema]),
@@ -160,13 +222,18 @@ export function defineCli<
   const usage =
     def.usage ??
     buildUsage(
-      resolved.map(({ long, descriptor, isBoolean }) => ({
+      resolved.map(({ key, long, descriptor, isBoolean }) => ({
+        key,
         long,
         descriptor,
         isBoolean,
         isOptional: isOptionalFlag(descriptor.schema),
       })),
       positionalsConfig.label,
+      exclusiveGroups.map((group) => ({
+        keys: group.flags as string[],
+        required: group.required ?? false,
+      })),
     );
 
   function parse<TOut = InferFlags<TFlags>>(
@@ -195,6 +262,7 @@ export function defineCli<
     }
 
     const { raw, argvErrors } = buildRawFlags(resolved, values);
+    argvErrors.push(...checkExclusiveGroups(exclusiveGroups, raw, longOf));
     if (argvErrors.length > 0) {
       return {
         success: false,

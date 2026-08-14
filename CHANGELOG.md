@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.1] - 2026-08-14
+
+### Fixed
+
+- README no longer carries a leftover deprecation banner inherited from the old `zod-cli-flags` package due to a bad merge.
+
 ## [1.1.0] - 2026-08-14
 
 ### Changed

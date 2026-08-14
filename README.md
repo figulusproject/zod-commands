@@ -4,8 +4,6 @@
 [![Coverage](https://img.shields.io/endpoint?url=https://zodcommands.figulus.dev/coverage-badge.json)](https://github.com/figulusproject/zod-commands/actions/workflows/ci.yml)
 [![NPM version](https://badge.fury.io/js/zod-commands.svg)](http://badge.fury.io/js/zod-commands)
 
-> **Renamed to [`zod-commands`](https://www.npmjs.com/package/zod-commands).** `zod-cli-flags` is deprecated and won't receive further updates. Source and changelog have moved to [figulusproject/zod-commands](https://github.com/figulusproject/zod-commands).
-
 > _Everyone has the right to resist occupation._
 
 Define a CLI's flags, positionals, and subcommands as Zod schemas plus a small sibling metadata object, and get the `node:util` `parseArgs` option config, a typed parse result, and a usage string derived from that single declaration.

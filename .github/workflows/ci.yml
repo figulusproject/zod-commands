@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20, 22, 24]
+        node-version: [22, 24, 26]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,11 +34,11 @@ jobs:
         run: npm test
 
       - name: Coverage
-        if: matrix.node-version == 24
+        if: matrix.node-version == 26
         run: npm run coverage
 
       - name: Update coverage badge
-        if: matrix.node-version == 24 && github.ref == 'refs/heads/main'
+        if: matrix.node-version == 26 && github.ref == 'refs/heads/main'
         run: |
           node -e "
             const fs = require('fs');

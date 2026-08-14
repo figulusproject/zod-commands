@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.2] - 2026-08-15
+
+### Added
+
+- `defaultCommand` option on `defineCommands()`: names a command to dispatch to when the token after global flags doesn't match a defined command name (missing, a flag, or unrecognized), passing that whole segment through as the default command's own args instead of requiring a subcommand name up front.
+
+### Changed
+
+- CI (`ci.yml`) now runs on Node 22/24/26 instead of 20/22/24, and publish (`publish.yml`) now runs on Node 26 instead of 24.
+
 ## [1.1.1] - 2026-08-14
 
 ### Fixed

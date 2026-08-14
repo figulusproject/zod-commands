@@ -84,12 +84,15 @@ export interface DefineCommandsOptions<
   flags?: TFlags;
   exclusiveGroups?: ExclusiveGroup<TFlags>[];
   usage?: string;
+  /** Command to dispatch to when the segment after global flags doesn't name a command. */
+  defaultCommand?: keyof TCommands & string;
 }
 
 function buildCommandsUsage(
   names: string[],
   resolved: ReturnType<typeof resolveFlags>,
   exclusiveGroups: ExclusiveGroup[],
+  hasDefault: boolean,
 ): string {
   const flagsUsage = buildUsage(
     resolved.map(({ key, long, descriptor, isBoolean }) => ({
@@ -106,7 +109,9 @@ function buildCommandsUsage(
     })),
   ).replace(/^Usage:\s*/, "");
 
-  const commandsPart = `(${names.join("|")}) ...`;
+  const commandsPart = hasDefault
+    ? `[${names.join("|")}] ...`
+    : `(${names.join("|")}) ...`;
   return flagsUsage
     ? `Usage: ${flagsUsage} ${commandsPart}`
     : `Usage: ${commandsPart}`;
@@ -132,13 +137,26 @@ export function defineCommands<
   validateExclusiveGroups(exclusiveGroups, flags);
   const longOf = new Map(resolved.map(({ key, long }) => [key, long]));
 
+  const defaultCommand = def.defaultCommand as string | undefined;
+  if (defaultCommand !== undefined && !(defaultCommand in def.commands)) {
+    throw new Error(
+      `zod-commands: defineCommands() defaultCommand "${defaultCommand}" is not one of the defined commands.`,
+    );
+  }
+
   const shape = Object.fromEntries(
     resolved.map(({ key, descriptor }) => [key, descriptor.schema]),
   ) as { [K in keyof TFlags]: TFlags[K]["schema"] };
   const flagsSchema = z.object(shape);
 
   const usage =
-    def.usage ?? buildCommandsUsage(names, resolved, exclusiveGroups);
+    def.usage ??
+    buildCommandsUsage(
+      names,
+      resolved,
+      exclusiveGroups,
+      defaultCommand !== undefined,
+    );
 
   // Splits argv into the leading global-flags segment and the trailing command segment
   // (subcommand name plus everything after it), using node:util's non-strict token stream
@@ -240,6 +258,21 @@ export function defineCommands<
     | { ok: true; name: string; child: SubCommand; rest: string[] }
     | { ok: false; error: CliParseError } {
     const [name, ...rest] = commandSegment;
+
+    if (name !== undefined && !name.startsWith("-")) {
+      const child = def.commands[name];
+      if (child) return { ok: true, name, child, rest };
+    }
+
+    if (defaultCommand !== undefined) {
+      return {
+        ok: true,
+        name: defaultCommand,
+        child: def.commands[defaultCommand],
+        rest: commandSegment,
+      };
+    }
+
     if (name === undefined) {
       return {
         ok: false,
@@ -258,17 +291,13 @@ export function defineCommands<
         },
       };
     }
-    const child = def.commands[name];
-    if (!child) {
-      return {
-        ok: false,
-        error: {
-          message: `Unknown command "${name}". Valid commands: ${names.join(", ")}.`,
-          issues: [],
-        },
-      };
-    }
-    return { ok: true, name, child, rest };
+    return {
+      ok: false,
+      error: {
+        message: `Unknown command "${name}". Valid commands: ${names.join(", ")}.`,
+        issues: [],
+      },
+    };
   }
 
   function wrapSuccess(

@@ -285,3 +285,85 @@ describe("defineCommands - parseOrExit", () => {
     expect(errorSpy.mock.calls[1]?.[0]).toBe(withFlags.commands.init.usage);
   });
 });
+
+describe("defineCommands - defaultCommand", () => {
+  const cli = defineCommands({
+    flags: { verbose: { schema: z.boolean().default(false) } },
+    defaultCommand: "crawl",
+    commands: {
+      crawl: defineCli({
+        flags: { depth: { schema: z.coerce.number().default(1) } },
+        positionals: z.array(z.string()),
+      }),
+      status: defineCli({ flags: {} }),
+    },
+  });
+
+  it("dispatches to the default command when the first token is a positional", () => {
+    const result = cli.parse(["https://example.com"]);
+    expect(result).toEqual({
+      success: true,
+      command: ["crawl"],
+      global: { verbose: false },
+      data: { depth: 1 },
+      positionals: ["https://example.com"],
+    });
+  });
+
+  it("dispatches to the default command when the first token is a flag it owns", () => {
+    const result = cli.parse(["--depth", "3", "https://example.com"]);
+    expect(result).toEqual({
+      success: true,
+      command: ["crawl"],
+      global: { verbose: false },
+      data: { depth: 3 },
+      positionals: ["https://example.com"],
+    });
+  });
+
+  it("dispatches to the default command with no args at all", () => {
+    const result = cli.parse([]);
+    expect(result).toEqual({
+      success: true,
+      command: ["crawl"],
+      global: { verbose: false },
+      data: { depth: 1 },
+      positionals: [],
+    });
+  });
+
+  it("still resolves an explicitly named command over the default", () => {
+    const result = cli.parse(["status"]);
+    expect(result).toEqual({
+      success: true,
+      command: ["status"],
+      global: { verbose: false },
+      data: {},
+      positionals: [],
+    });
+  });
+
+  it("parses global flags before falling back to the default command", () => {
+    const result = cli.parse(["--verbose", "https://example.com"]);
+    expect(result).toEqual({
+      success: true,
+      command: ["crawl"],
+      global: { verbose: true },
+      data: { depth: 1 },
+      positionals: ["https://example.com"],
+    });
+  });
+
+  it("uses brackets instead of parens in the auto-generated usage", () => {
+    expect(cli.usage).toContain("[crawl|status] ...");
+  });
+
+  it("throws at defineCommands() time when defaultCommand isn't a defined command", () => {
+    expect(() =>
+      defineCommands({
+        defaultCommand: "bogus" as any,
+        commands: { init: defineCli({ flags: {} }) },
+      }),
+    ).toThrow(/defaultCommand "bogus" is not one of the defined commands/);
+  });
+});

@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Docs: a docsify-based documentation site under `docs/`, published at https://zodcommands.figulus.dev, with dedicated pages for usage, positionals, flag groups, subcommands, and repo development.
 - Test coverage tracking via `npm run coverage` (vitest, v8 provider), enforced as a minimum threshold in CI, with a coverage badge in the README kept up to date on pushes to main.
 
+## [1.0.3] - 2026-08-14
+
+### Deprecated
+
+- Renamed to `zod-commands`. `zod-cli-flags` won't receive further updates, and has been deprecated in favour of the new package name.
+
 ## [1.0.2] - 2026-08-09
 
 ### Added

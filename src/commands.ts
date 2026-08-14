@@ -151,7 +151,12 @@ export function defineCommands<
 
   const usage =
     def.usage ??
-    buildCommandsUsage(names, resolved, exclusiveGroups, defaultCommand !== undefined);
+    buildCommandsUsage(
+      names,
+      resolved,
+      exclusiveGroups,
+      defaultCommand !== undefined,
+    );
 
   // Splits argv into the leading global-flags segment and the trailing command segment
   // (subcommand name plus everything after it), using node:util's non-strict token stream

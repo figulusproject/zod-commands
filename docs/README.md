@@ -18,3 +18,4 @@ npm install zod-cli-flags zod
 - [Positionals](positionals.md): typed positional arguments
 - [Flag groups](flag-groups.md): mutually-exclusive flags
 - [Subcommands](subcommands.md): dispatching to nested command trees
+- [Development](development.md): working on this repo itself

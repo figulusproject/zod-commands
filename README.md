@@ -51,6 +51,10 @@ const { data } = cli.parseOrExit(process.argv);
 
 See the [docs site](https://zodcliflags.figulus.dev/) for cross-field validation, the full flag schema reference, positionals, mutually-exclusive flag groups, and subcommands.
 
+## Development
+
+See the [docs site](https://zodcliflags.figulus.dev/#/development) for the full dev commands and running the docs site locally.
+
 ## Copyright
 
 Copyright 2026, Figulus Project.

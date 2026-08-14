@@ -28,3 +28,14 @@ const cli = defineCli({
 
 cli.usage; // "Usage: <source> <destination> --output <value>"
 ```
+
+`flags` is optional, so a CLI that only takes positionals can omit it entirely:
+
+```ts
+const cli = defineCli({
+  positionals: {
+    schema: z.array(z.string()).min(1).max(1),
+    label: "<version>",
+  },
+});
+```

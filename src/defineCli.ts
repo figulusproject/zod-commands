@@ -168,7 +168,7 @@ export interface DefineCliOptions<
   TFlags extends FlagDescriptors,
   TPositionalsInput extends PositionalsInput | undefined,
 > {
-  flags: TFlags;
+  flags?: TFlags;
   positionals?: TPositionalsInput;
   exclusiveGroups?: ExclusiveGroup<TFlags>[];
   usage?: string;
@@ -200,16 +200,17 @@ export interface CliDefinition<
 }
 
 export function defineCli<
-  TFlags extends FlagDescriptors,
+  TFlags extends FlagDescriptors = {},
   TPositionalsInput extends PositionalsInput | undefined = undefined,
 >(
   def: DefineCliOptions<TFlags, TPositionalsInput>,
 ): CliDefinition<TFlags, TPositionalsInput> {
-  const resolved = resolveFlags(def.flags);
+  const flags = (def.flags ?? {}) as TFlags;
+  const resolved = resolveFlags(flags);
   const parseArgsOptions = buildParseArgsOptions(resolved);
   const positionalsConfig = resolvePositionals(def.positionals);
   const exclusiveGroups = (def.exclusiveGroups ?? []) as ExclusiveGroup[];
-  validateExclusiveGroups(exclusiveGroups, def.flags);
+  validateExclusiveGroups(exclusiveGroups, flags);
   const longOf = new Map(resolved.map(({ key, long }) => [key, long]));
 
   const shape = Object.fromEntries(

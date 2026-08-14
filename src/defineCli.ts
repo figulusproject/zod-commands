@@ -2,9 +2,10 @@ import type { ParseArgsOptionDescriptor } from "node:util";
 import { parseArgs } from "node:util";
 import { z } from "zod";
 import { isBooleanSchema, isOptionalFlag } from "./introspect.js";
-import { kebabCase } from "./formatting.js";
+import { joinWithConjunction, kebabCase } from "./formatting.js";
 import type {
   CliIssue,
+  ExclusiveGroup,
   FlagDescriptor,
   FlagDescriptors,
   FlagRawValue,
@@ -13,27 +14,27 @@ import type {
 } from "./types.js";
 import { buildUsage } from "./usage.js";
 
-interface ResolvedFlag {
+export interface ResolvedFlag {
   key: string;
   long: string;
   descriptor: FlagDescriptor;
   isBoolean: boolean;
 }
 
-function resolveFlags(flags: FlagDescriptors): ResolvedFlag[] {
+export function resolveFlags(flags: FlagDescriptors): ResolvedFlag[] {
   return Object.entries(flags).map(([key, descriptor]) => {
     const long = descriptor.long ?? kebabCase(key);
     const isBoolean = isBooleanSchema(descriptor.schema);
     if (descriptor.negatable && !isBoolean) {
       throw new Error(
-        `zod-cli-flags: flag "${key}" has negatable:true but its schema isn't a z.boolean() (or wrapped z.boolean()). Negation only applies to presence-based boolean flags; use z.stringbool() for a value-taking boolean instead.`,
+        `zod-commands: flag "${key}" has negatable:true but its schema isn't a z.boolean() (or wrapped z.boolean()). Negation only applies to presence-based boolean flags; use z.stringbool() for a value-taking boolean instead.`,
       );
     }
     return { key, long, descriptor, isBoolean };
   });
 }
 
-function buildParseArgsOptions(
+export function buildParseArgsOptions(
   resolved: ResolvedFlag[],
 ): Record<string, ParseArgsOptionDescriptor> {
   const options: Record<string, ParseArgsOptionDescriptor> = {};
@@ -51,7 +52,64 @@ function buildParseArgsOptions(
   return options;
 }
 
-function buildRawFlags(
+export function validateExclusiveGroups(
+  groups: ExclusiveGroup[],
+  flags: FlagDescriptors,
+): void {
+  const seen = new Set<string>();
+  for (const group of groups) {
+    if (group.flags.length < 2) {
+      throw new Error(
+        `zod-commands: exclusiveGroups group must reference at least 2 flags, got: [${group.flags.join(", ")}].`,
+      );
+    }
+    for (const key of group.flags) {
+      const flagKey = key as string;
+      if (!(flagKey in flags)) {
+        throw new Error(
+          `zod-commands: exclusiveGroups references unknown flag "${flagKey}".`,
+        );
+      }
+      if (seen.has(flagKey)) {
+        throw new Error(
+          `zod-commands: flag "${flagKey}" cannot appear in more than one exclusiveGroups group.`,
+        );
+      }
+      seen.add(flagKey);
+      if (!isOptionalFlag(flags[flagKey]!.schema)) {
+        throw new Error(
+          `zod-commands: flag "${flagKey}" in an exclusiveGroups group must be .optional()/.default(), since the group requires other members to be omitted.`,
+        );
+      }
+    }
+  }
+}
+
+export function checkExclusiveGroups(
+  groups: ExclusiveGroup[],
+  raw: Record<string, unknown>,
+  longOf: Map<string, string>,
+): string[] {
+  const errors: string[] = [];
+  for (const group of groups) {
+    const keys = group.flags as string[];
+    const present = keys.filter((key) => raw[key] !== undefined);
+    const longsOf = (list: string[]) =>
+      list.map((key) => `--${longOf.get(key)}`);
+    if (present.length > 1) {
+      errors.push(
+        `${joinWithConjunction(longsOf(present), "and")} are mutually exclusive.`,
+      );
+    } else if (group.required && present.length === 0) {
+      errors.push(
+        `One of ${joinWithConjunction(longsOf(keys), "or")} is required.`,
+      );
+    }
+  }
+  return errors;
+}
+
+export function buildRawFlags(
   resolved: ResolvedFlag[],
   values: Record<string, FlagRawValue>,
 ): { raw: Record<string, unknown>; argvErrors: string[] } {
@@ -73,7 +131,7 @@ function buildRawFlags(
   return { raw, argvErrors };
 }
 // Strips the Node binary and script path so they aren't misparsed as positionals.
-function normalizeArgv(argv: string[]): string[] {
+export function normalizeArgv(argv: string[]): string[] {
   const looksLikeUnslicedProcessArgv =
     argv.length >= 2 &&
     argv[0] === process.argv[0] &&
@@ -81,7 +139,7 @@ function normalizeArgv(argv: string[]): string[] {
   return looksLikeUnslicedProcessArgv ? argv.slice(2) : argv;
 }
 
-function toCliIssues(error: z.ZodError): CliIssue[] {
+export function toCliIssues(error: z.ZodError): CliIssue[] {
   return error.issues.map((issue) => ({
     path: issue.path as (string | number)[],
     message: issue.message,
@@ -110,15 +168,16 @@ export interface DefineCliOptions<
   TFlags extends FlagDescriptors,
   TPositionalsInput extends PositionalsInput | undefined,
 > {
-  flags: TFlags;
+  flags?: TFlags;
   positionals?: TPositionalsInput;
+  exclusiveGroups?: ExclusiveGroup<TFlags>[];
   usage?: string;
 }
 
-type InferFlags<TFlags extends FlagDescriptors> = {
+export type InferFlags<TFlags extends FlagDescriptors> = {
   [K in keyof TFlags]: z.infer<TFlags[K]["schema"]>;
 };
-type InferPositionals<TPositionalsInput> =
+export type InferPositionals<TPositionalsInput> =
   SchemaOf<TPositionalsInput> extends z.ZodType
     ? z.infer<SchemaOf<TPositionalsInput>>
     : string[];
@@ -141,14 +200,18 @@ export interface CliDefinition<
 }
 
 export function defineCli<
-  TFlags extends FlagDescriptors,
+  TFlags extends FlagDescriptors = {},
   TPositionalsInput extends PositionalsInput | undefined = undefined,
 >(
   def: DefineCliOptions<TFlags, TPositionalsInput>,
 ): CliDefinition<TFlags, TPositionalsInput> {
-  const resolved = resolveFlags(def.flags);
+  const flags = (def.flags ?? {}) as TFlags;
+  const resolved = resolveFlags(flags);
   const parseArgsOptions = buildParseArgsOptions(resolved);
   const positionalsConfig = resolvePositionals(def.positionals);
+  const exclusiveGroups = (def.exclusiveGroups ?? []) as ExclusiveGroup[];
+  validateExclusiveGroups(exclusiveGroups, flags);
+  const longOf = new Map(resolved.map(({ key, long }) => [key, long]));
 
   const shape = Object.fromEntries(
     resolved.map(({ key, descriptor }) => [key, descriptor.schema]),
@@ -160,13 +223,18 @@ export function defineCli<
   const usage =
     def.usage ??
     buildUsage(
-      resolved.map(({ long, descriptor, isBoolean }) => ({
+      resolved.map(({ key, long, descriptor, isBoolean }) => ({
+        key,
         long,
         descriptor,
         isBoolean,
         isOptional: isOptionalFlag(descriptor.schema),
       })),
       positionalsConfig.label,
+      exclusiveGroups.map((group) => ({
+        keys: group.flags as string[],
+        required: group.required ?? false,
+      })),
     );
 
   function parse<TOut = InferFlags<TFlags>>(
@@ -195,6 +263,7 @@ export function defineCli<
     }
 
     const { raw, argvErrors } = buildRawFlags(resolved, values);
+    argvErrors.push(...checkExclusiveGroups(exclusiveGroups, raw, longOf));
     if (argvErrors.length > 0) {
       return {
         success: false,

@@ -121,7 +121,7 @@ export function defineCommands<
   const names = Object.keys(def.commands);
   if (names.length === 0) {
     throw new Error(
-      "zod-cli-flags: defineCommands() requires at least 1 command.",
+      "zod-commands: defineCommands() requires at least 1 command.",
     );
   }
 

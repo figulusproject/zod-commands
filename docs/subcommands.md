@@ -4,7 +4,7 @@
 
 ```ts
 import { z } from "zod";
-import { defineCli, defineCommands } from "zod-cli-flags";
+import { defineCli, defineCommands } from "zod-commands";
 
 const cli = defineCommands({
   commands: {

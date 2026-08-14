@@ -1,13 +1,13 @@
-# zod-cli-flags
+# zod-commands
 
 > _Everyone has the right to resist occupation._
 
-Define a CLI's flags once as Zod schemas plus a small sibling metadata object, and get the `node:util` `parseArgs` option config, a typed parse result, and a usage string derived from that single declaration.
+Define a CLI's flags, positionals, and subcommands as Zod schemas plus a small sibling metadata object, and get the `node:util` `parseArgs` option config, a typed parse result, and a usage string derived from that single declaration.
 
 ## Installation
 
 ```sh
-npm install zod-cli-flags zod
+npm install zod-commands zod
 ```
 
 `zod` (v4) is a peer dependency. See [Usage](usage.md) to get started.

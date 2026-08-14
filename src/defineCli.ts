@@ -27,7 +27,7 @@ export function resolveFlags(flags: FlagDescriptors): ResolvedFlag[] {
     const isBoolean = isBooleanSchema(descriptor.schema);
     if (descriptor.negatable && !isBoolean) {
       throw new Error(
-        `zod-cli-flags: flag "${key}" has negatable:true but its schema isn't a z.boolean() (or wrapped z.boolean()). Negation only applies to presence-based boolean flags; use z.stringbool() for a value-taking boolean instead.`,
+        `zod-commands: flag "${key}" has negatable:true but its schema isn't a z.boolean() (or wrapped z.boolean()). Negation only applies to presence-based boolean flags; use z.stringbool() for a value-taking boolean instead.`,
       );
     }
     return { key, long, descriptor, isBoolean };
@@ -60,25 +60,25 @@ export function validateExclusiveGroups(
   for (const group of groups) {
     if (group.flags.length < 2) {
       throw new Error(
-        `zod-cli-flags: exclusiveGroups group must reference at least 2 flags, got: [${group.flags.join(", ")}].`,
+        `zod-commands: exclusiveGroups group must reference at least 2 flags, got: [${group.flags.join(", ")}].`,
       );
     }
     for (const key of group.flags) {
       const flagKey = key as string;
       if (!(flagKey in flags)) {
         throw new Error(
-          `zod-cli-flags: exclusiveGroups references unknown flag "${flagKey}".`,
+          `zod-commands: exclusiveGroups references unknown flag "${flagKey}".`,
         );
       }
       if (seen.has(flagKey)) {
         throw new Error(
-          `zod-cli-flags: flag "${flagKey}" cannot appear in more than one exclusiveGroups group.`,
+          `zod-commands: flag "${flagKey}" cannot appear in more than one exclusiveGroups group.`,
         );
       }
       seen.add(flagKey);
       if (!isOptionalFlag(flags[flagKey]!.schema)) {
         throw new Error(
-          `zod-cli-flags: flag "${flagKey}" in an exclusiveGroups group must be .optional()/.default(), since the group requires other members to be omitted.`,
+          `zod-commands: flag "${flagKey}" in an exclusiveGroups group must be .optional()/.default(), since the group requires other members to be omitted.`,
         );
       }
     }

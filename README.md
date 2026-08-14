@@ -1,17 +1,17 @@
-# zod-cli-flags
+# zod-commands
 
-[![CI](https://github.com/figulusproject/zod-cli-flags/actions/workflows/ci.yml/badge.svg)](https://github.com/figulusproject/zod-cli-flags/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https://zodcliflags.figulus.dev/coverage-badge.json)](https://github.com/figulusproject/zod-cli-flags/actions/workflows/ci.yml)
-[![NPM version](https://badge.fury.io/js/zod-cli-flags.svg)](http://badge.fury.io/js/zod-cli-flags)
+[![CI](https://github.com/figulusproject/zod-commands/actions/workflows/ci.yml/badge.svg)](https://github.com/figulusproject/zod-commands/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://zodcommands.figulus.dev/coverage-badge.json)](https://github.com/figulusproject/zod-commands/actions/workflows/ci.yml)
+[![NPM version](https://badge.fury.io/js/zod-commands.svg)](http://badge.fury.io/js/zod-commands)
 
 > _Everyone has the right to resist occupation._
 
-Define a CLI's flags once as Zod schemas plus a small sibling metadata object, and get the `node:util` `parseArgs` option config, a typed parse result, and a usage string derived from that single declaration.
+Define a CLI's flags, positionals, and subcommands as Zod schemas plus a small sibling metadata object, and get the `node:util` `parseArgs` option config, a typed parse result, and a usage string derived from that single declaration.
 
 ## Installation
 
 ```sh
-npm install zod-cli-flags zod
+npm install zod-commands zod
 ```
 
 `zod` (v4) is a peer dependency.
@@ -20,7 +20,7 @@ npm install zod-cli-flags zod
 
 ```ts
 import { z } from "zod";
-import { defineCli } from "zod-cli-flags";
+import { defineCli } from "zod-commands";
 
 const cli = defineCli({
   flags: {
@@ -50,11 +50,11 @@ Or, for a CLI entrypoint that doesn't need the discriminated result for testing:
 const { data } = cli.parseOrExit(process.argv);
 ```
 
-See the [docs site](https://zodcliflags.figulus.dev/) for cross-field validation, the full flag schema reference, positionals, mutually-exclusive flag groups, and subcommands.
+See the [docs site](https://zodcommands.figulus.dev/) for cross-field validation, the full flag schema reference, positionals, mutually-exclusive flag groups, and subcommands.
 
 ## Development
 
-See the [docs site](https://zodcliflags.figulus.dev/#/development) for the full dev commands and running the docs site locally.
+See the [docs site](https://zodcommands.figulus.dev/#/development) for the full dev commands and running the docs site locally.
 
 ## Copyright
 

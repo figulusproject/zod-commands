@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `defineCommands()`: dispatches argv's leading token to a named subcommand, each an ordinary `defineCli()` (or a nested `defineCommands()` for arbitrarily deep command trees). Returns a discriminated `{ success: true, command, global, data, positionals } | { success: false, command?, error }` result, with `command` the full path from root to the resolved leaf. Also accepts its own `flags`/`exclusiveGroups`, parsed from whatever precedes the command name and merged into `result.global` across nesting levels (innermost wins on a key collision). `cli.parseOrExit()` prints the most specific usage available (the resolved subcommand's own usage, or the command list) and exits 1 on failure.
 - `exclusiveGroups` option on `defineCli()`: marks a set of flags as mutually exclusive (at most one, or exactly one with `required: true`), enforced at parse time and rendered in the auto-generated usage string as `(--a <value> | --b <value>)` or `[--a <value> | --b <value>]`.
+- Test coverage tracking via `npm run coverage` (vitest, v8 provider), enforced as a minimum threshold in CI, with a coverage badge in the README kept up to date on pushes to main.
 
 ## [1.0.2] - 2026-08-09
 

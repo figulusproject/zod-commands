@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- `defaultCommand` option on `defineCommands()`: names a command to dispatch to when the token after global flags doesn't match a defined command name (missing, a flag, or unrecognized), passing that whole segment through as the default command's own args instead of requiring a subcommand name up front.
+
 ## [1.1.1] - 2026-08-14
 
 ### Fixed

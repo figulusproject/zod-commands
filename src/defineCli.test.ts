@@ -305,6 +305,32 @@ describe("defineCli - positionals", () => {
   });
 });
 
+describe("defineCli - flags omitted", () => {
+  it("parses positionals from a flags-less, positionals-only CLI", () => {
+    const cli = defineCli({
+      positionals: {
+        schema: z.array(z.string()).min(1).max(1),
+        label: "<version>",
+      },
+    });
+
+    const result = cli.parse(["1.2.3"]);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual({});
+      expect(result.positionals).toEqual(["1.2.3"]);
+    }
+  });
+
+  it("still rejects an unrecognized flag", () => {
+    const cli = defineCli({
+      positionals: { schema: z.array(z.string()) },
+    });
+    const result = cli.parse(["--bogus"]);
+    expect(result.success).toBe(false);
+  });
+});
+
 describe("defineCli - exclusiveGroups", () => {
   it("allows neither, either, but not both members of an optional group", () => {
     const cli = defineCli({

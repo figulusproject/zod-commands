@@ -23,13 +23,15 @@
     "test": "vitest run",
     "typecheck": "tsc -b --force",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "docs": "docsify serve docs"
   },
   "peerDependencies": {
     "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^22",
+    "docsify-cli": "^5.0.0",
     "prettier": "^3.8.3",
     "typescript": "^5",
     "vitest": "^4",

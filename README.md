@@ -1,6 +1,7 @@
 # zod-cli-flags
 
 [![CI](https://github.com/figulusproject/zod-cli-flags/actions/workflows/ci.yml/badge.svg)](https://github.com/figulusproject/zod-cli-flags/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://zodcliflags.figulus.dev/coverage-badge.json)](https://github.com/figulusproject/zod-cli-flags/actions/workflows/ci.yml)
 [![NPM version](https://badge.fury.io/js/zod-cli-flags.svg)](http://badge.fury.io/js/zod-cli-flags)
 
 > _Everyone has the right to resist occupation._

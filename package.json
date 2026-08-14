@@ -21,6 +21,7 @@
     "build": "tsc -b",
     "clean": "rm -rf dist *.tsbuildinfo",
     "test": "vitest run",
+    "coverage": "vitest run --coverage",
     "typecheck": "tsc -b --force",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@types/node": "^22",
+    "@vitest/coverage-v8": "^4.1.10",
     "docsify-cli": "^5.0.0",
     "prettier": "^3.8.3",
     "typescript": "^5",

@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.tsbuildinfo
+package-lock.json
+docs/coverage-badge.json

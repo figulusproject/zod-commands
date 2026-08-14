@@ -14,14 +14,14 @@ import type {
 } from "./types.js";
 import { buildUsage } from "./usage.js";
 
-interface ResolvedFlag {
+export interface ResolvedFlag {
   key: string;
   long: string;
   descriptor: FlagDescriptor;
   isBoolean: boolean;
 }
 
-function resolveFlags(flags: FlagDescriptors): ResolvedFlag[] {
+export function resolveFlags(flags: FlagDescriptors): ResolvedFlag[] {
   return Object.entries(flags).map(([key, descriptor]) => {
     const long = descriptor.long ?? kebabCase(key);
     const isBoolean = isBooleanSchema(descriptor.schema);
@@ -34,7 +34,7 @@ function resolveFlags(flags: FlagDescriptors): ResolvedFlag[] {
   });
 }
 
-function buildParseArgsOptions(
+export function buildParseArgsOptions(
   resolved: ResolvedFlag[],
 ): Record<string, ParseArgsOptionDescriptor> {
   const options: Record<string, ParseArgsOptionDescriptor> = {};
@@ -52,7 +52,7 @@ function buildParseArgsOptions(
   return options;
 }
 
-function validateExclusiveGroups(
+export function validateExclusiveGroups(
   groups: ExclusiveGroup[],
   flags: FlagDescriptors,
 ): void {
@@ -85,7 +85,7 @@ function validateExclusiveGroups(
   }
 }
 
-function checkExclusiveGroups(
+export function checkExclusiveGroups(
   groups: ExclusiveGroup[],
   raw: Record<string, unknown>,
   longOf: Map<string, string>,
@@ -109,7 +109,7 @@ function checkExclusiveGroups(
   return errors;
 }
 
-function buildRawFlags(
+export function buildRawFlags(
   resolved: ResolvedFlag[],
   values: Record<string, FlagRawValue>,
 ): { raw: Record<string, unknown>; argvErrors: string[] } {
@@ -131,7 +131,7 @@ function buildRawFlags(
   return { raw, argvErrors };
 }
 // Strips the Node binary and script path so they aren't misparsed as positionals.
-function normalizeArgv(argv: string[]): string[] {
+export function normalizeArgv(argv: string[]): string[] {
   const looksLikeUnslicedProcessArgv =
     argv.length >= 2 &&
     argv[0] === process.argv[0] &&
@@ -139,7 +139,7 @@ function normalizeArgv(argv: string[]): string[] {
   return looksLikeUnslicedProcessArgv ? argv.slice(2) : argv;
 }
 
-function toCliIssues(error: z.ZodError): CliIssue[] {
+export function toCliIssues(error: z.ZodError): CliIssue[] {
   return error.issues.map((issue) => ({
     path: issue.path as (string | number)[],
     message: issue.message,
@@ -174,10 +174,10 @@ export interface DefineCliOptions<
   usage?: string;
 }
 
-type InferFlags<TFlags extends FlagDescriptors> = {
+export type InferFlags<TFlags extends FlagDescriptors> = {
   [K in keyof TFlags]: z.infer<TFlags[K]["schema"]>;
 };
-type InferPositionals<TPositionalsInput> =
+export type InferPositionals<TPositionalsInput> =
   SchemaOf<TPositionalsInput> extends z.ZodType
     ? z.infer<SchemaOf<TPositionalsInput>>
     : string[];

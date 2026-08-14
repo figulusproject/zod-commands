@@ -1,6 +1,6 @@
 {
   "name": "zod-cli-flags",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Define a CLI's flags as a single Zod schema and parse argv into a typed result.",
   "type": "module",
   "main": "./dist/index.js",

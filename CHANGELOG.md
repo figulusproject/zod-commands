@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.3] - 2026-08-14
+
+### Deprecated
+
+- Renamed to `zod-commands`. This package won't receive further updates - see the README for the new package and repo.
+
 ## [1.0.2] - 2026-08-09
 
 ### Added

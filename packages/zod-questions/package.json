@@ -1,6 +1,6 @@
 {
   "name": "zod-questions",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Define an interactive terminal prompt flow's questions once as Zod schemas plus a small sibling metadata object, and get the widget for each one, a typed and validated answer set, and reprompt-on-invalid-input for free.",
   "type": "module",
   "main": "./dist/index.js",

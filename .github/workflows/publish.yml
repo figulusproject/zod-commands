@@ -14,6 +14,7 @@ on:
           - ""
           - "zod-introspect"
           - "zod-commands"
+          - "zod-questions"
         default: ""
 
 permissions:

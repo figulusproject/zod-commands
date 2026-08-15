@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "packages/zod-introspect" },
-    { "path": "packages/zod-commands" }
+    { "path": "packages/zod-commands" },
+    { "path": "packages/zod-questions" }
   ]
 }

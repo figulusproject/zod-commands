@@ -1,21 +1,18 @@
-# zod-commands
+# zod-intake
 
 > _Everyone has the right to resist occupation._
 
-Define a CLI's flags, positionals, and subcommands as Zod schemas plus a small sibling metadata object, and get the `node:util` `parseArgs` option config, a typed parse result, and a usage string derived from that single declaration.
+Zod schema-driven parsing for how a program takes input from a person, in whatever form that takes: CLI flags, interactive prompts, or the introspection logic shared by both.
 
-## Installation
+## Pick a starting point
 
-```sh
-npm install zod-commands zod
-```
+- [zod-commands](zod-commands/usage.md): a CLI's flags, positionals, and subcommands, declared as Zod schemas plus a small sibling metadata object
+- [zod-questions](zod-questions/usage.md): the same declarative contract, applied to interactive terminal prompts, not `argv`
+- [zod-introspect](zod-introspect/usage.md): the shared logic for deciding what a Zod schema _means_ (a boolean? an enum? a value-taking string?), used by both
 
-`zod` (v4) is a peer dependency. See [Usage](usage.md) to get started.
+Each is independently published to npm and independently versioned - install only the one you need.
 
 ## Once you're up and running
 
-- [Usage](usage.md): defining flags, cross-field validation, and the full flag schema reference
-- [Positionals](positionals.md): typed positional arguments
-- [Flag groups](flag-groups.md): mutually-exclusive flags
-- [Subcommands](subcommands.md): dispatching to nested command trees
+- [Tasks](zod-questions/tasks.md): zod-questions steps that run a side effect with a status display, rather than collect a typed answer
 - [Development](development.md): working on this repo itself

@@ -1,0 +1,41 @@
+{
+  "name": "zod-commands",
+  "version": "1.1.4",
+  "description": "Define a CLI's flags, positionals, and subcommands as Zod schemas, and parse argv into a typed result.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "prepack": "cp ../../LICENSE ./LICENSE"
+  },
+  "dependencies": {
+    "zod-introspect": "^1.0.0"
+  },
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/figulusproject/zod-intake",
+    "directory": "packages/zod-commands"
+  },
+  "author": "The Figulus Project",
+  "license": "MIT"
+}

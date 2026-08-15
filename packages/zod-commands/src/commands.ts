@@ -15,7 +15,7 @@ import {
   toCliIssues,
   validateExclusiveGroups,
 } from "./defineCli.js";
-import { isOptionalFlag } from "./introspect.js";
+import { isOptionalOrDefault } from "./introspect.js";
 import type {
   CliParseError,
   ExclusiveGroup,
@@ -131,7 +131,7 @@ function buildCommandsUsage(
       long,
       descriptor,
       isBoolean,
-      isOptional: isOptionalFlag(descriptor.schema),
+      isOptional: isOptionalOrDefault(descriptor.schema),
     })),
     undefined,
     exclusiveGroups.map((group) => ({

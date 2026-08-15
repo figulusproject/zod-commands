@@ -23,7 +23,7 @@
     "prepack": "cp ../../LICENSE ./LICENSE"
   },
   "dependencies": {
-    "zod-introspect": "^0.1.0"
+    "zod-introspect": "^1.0.0"
   },
   "peerDependencies": {
     "zod": "^4.0.0",

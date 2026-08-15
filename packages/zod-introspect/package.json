@@ -1,6 +1,6 @@
 {
   "name": "zod-introspect",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Answers what a Zod v4 schema means for a caller deciding how to collect a value for it: is it a boolean, an enum, optional, has a default.",
   "type": "module",
   "main": "./dist/index.js",

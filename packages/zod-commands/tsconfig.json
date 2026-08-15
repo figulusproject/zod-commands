@@ -5,6 +5,7 @@
     "rootDir": "src",
     "types": ["node"]
   },
+  "references": [{ "path": "../zod-introspect" }],
   "include": ["src"],
   "exclude": ["src/**/*.test.ts"]
 }

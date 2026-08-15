@@ -1,7 +1,7 @@
 import type { ParseArgsOptionDescriptor } from "node:util";
 import { parseArgs } from "node:util";
 import { z } from "zod";
-import { isBooleanSchema, isOptionalFlag } from "./introspect.js";
+import { isBooleanSchema, isOptionalOrDefault } from "./introspect.js";
 import { joinWithConjunction, kebabCase } from "./formatting.js";
 import type {
   CliIssue,
@@ -76,7 +76,7 @@ export function validateExclusiveGroups(
         );
       }
       seen.add(flagKey);
-      if (!isOptionalFlag(flags[flagKey]!.schema)) {
+      if (!isOptionalOrDefault(flags[flagKey]!.schema)) {
         throw new Error(
           `zod-commands: flag "${flagKey}" in an exclusiveGroups group must be .optional()/.default(), since the group requires other members to be omitted.`,
         );
@@ -228,7 +228,7 @@ export function defineCli<
         long,
         descriptor,
         isBoolean,
-        isOptional: isOptionalFlag(descriptor.schema),
+        isOptional: isOptionalOrDefault(descriptor.schema),
       })),
       positionalsConfig.label,
       exclusiveGroups.map((group) => ({

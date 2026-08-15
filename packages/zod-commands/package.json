@@ -22,6 +22,9 @@
     "clean": "rm -rf dist *.tsbuildinfo",
     "prepack": "cp ../../LICENSE ./LICENSE"
   },
+  "dependencies": {
+    "zod-introspect": "^0.1.0"
+  },
   "peerDependencies": {
     "zod": "^4.0.0"
   },

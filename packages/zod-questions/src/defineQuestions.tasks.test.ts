@@ -111,6 +111,41 @@ describe("defineQuestions - tasks", () => {
     }
   });
 
+  it("passes answers - every prior question and task result - into run()", async () => {
+    const seen: unknown[] = [];
+    const flow = defineQuestions({
+      questions: { name: { schema: z.string(), message: "Name?" } },
+      tasks: {
+        first: {
+          message: "First",
+          schema: z.string(),
+          run: async ({ answers }) => {
+            seen.push({ ...answers });
+            return "first-result";
+          },
+        },
+        second: {
+          message: "Second",
+          run: async ({ answers }) => {
+            seen.push({ ...answers });
+          },
+        },
+      },
+    });
+
+    const renderer = createCannedRenderer(["Ada"]);
+    const result = await flow.ask({ renderer });
+
+    expect(result).toEqual({
+      success: true,
+      data: { name: "Ada", first: "first-result", second: undefined },
+    });
+    expect(seen).toEqual([
+      { name: "Ada" },
+      { name: "Ada", first: "first-result" },
+    ]);
+  });
+
   it("passes update() through to the renderer", async () => {
     const updates: string[] = [];
     const flow = defineQuestions({

@@ -30,6 +30,8 @@ export interface TaskDescriptor<T = unknown> {
   run: (ctx: {
     update: (msg: string) => void;
     signal: AbortSignal;
+    /** Every answer and task result collected so far, same object `when()` sees. */
+    answers: any;
   }) => Promise<unknown>;
 }
 

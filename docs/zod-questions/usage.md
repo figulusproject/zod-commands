@@ -44,6 +44,8 @@ Questions are asked in the order they're declared. The widget for each one is in
 
 An array question needs `multiselect: true` (with enum elements) or a `.transform()` from a string - a bare `z.array()` with neither throws at `defineQuestions()` time.
 
+The inferred answers type (`InferAnswers`/`InferAll`, and `ask()`'s default return type) types every question's field as always present, per its own schema - it doesn't account for `when()`. A `when`-gated question is legitimately absent from the result when its condition is false, so a caller relying on the inferred type for a gated field should treat it as possibly `undefined` despite what the type says, or narrow it manually against the same condition used in `when()`.
+
 ## Booleans
 
 `z.boolean()` renders as a confirm/toggle widget and returns a native `boolean` directly, with zero string parsing. `z.stringbool()` renders as a text widget instead, and the raw answer is parsed the same way a value-taking boolean flag is: case-insensitively against `yes`/`true`/`1`/`on`/`y`/`enabled` and their negatives.
@@ -52,6 +54,10 @@ An array question needs `multiselect: true` (with enum elements) or a `.transfor
 notify: { schema: z.boolean().default(true), message: "Enable notifications?" } // confirm
 subscribe: { schema: z.stringbool().default(true), message: "Subscribe? (yes/no)" } // text, parsed
 ```
+
+## Optional and default values
+
+Submitting an empty text/password answer against a `.optional()` or `.default(x)` schema never reaches the schema as the literal string `""` - it's treated as "no input" and `undefined` is parsed through the schema instead, same as omitting the key entirely. For `.optional()` that yields `undefined`; for `.default(x)` it yields `x`. This means an empty string can't be a distinct, meaningful answer on an optional/default schema - use a plain `z.string()` (no `.optional()`/`.default()`) if `""` itself needs to reach `schema.safeParse()` as a real value.
 
 ## Validation and retries
 

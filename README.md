@@ -12,6 +12,7 @@ See the [docs site](https://zodintake.figulus.dev/) for everything below.
 ## Packages
 
 - [zod-commands](/packages/zod-commands/) | CLI flags, positionals, and subcommands
+- [zod-introspect](/packages/zod-introspect/) | Zod v4 schema-shape introspection
 
 Each is independently published and independently versioned - see its own README for installation and usage.
 

@@ -12,6 +12,7 @@ on:
         type: choice
         options:
           - ""
+          - "zod-introspect"
           - "zod-commands"
         default: ""
 

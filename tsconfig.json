@@ -1,4 +1,7 @@
 {
   "files": [],
-  "references": [{ "path": "packages/zod-commands" }]
+  "references": [
+    { "path": "packages/zod-introspect" },
+    { "path": "packages/zod-commands" }
+  ]
 }

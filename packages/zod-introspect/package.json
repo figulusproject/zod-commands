@@ -1,0 +1,38 @@
+{
+  "name": "zod-introspect",
+  "version": "0.1.0",
+  "description": "Answers what a Zod v4 schema means for a caller deciding how to collect a value for it: is it a boolean, an enum, optional, has a default.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "prepack": "cp ../../LICENSE ./LICENSE"
+  },
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/figulusproject/zod-intake",
+    "directory": "packages/zod-introspect"
+  },
+  "author": "The Figulus Project",
+  "license": "MIT"
+}

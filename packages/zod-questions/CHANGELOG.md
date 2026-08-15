@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- `dist/index.js` no longer statically re-exports `clackRenderer`, which pulled `@clack/prompts` into the entrypoint's module graph regardless of whether a caller ever used the default renderer, making it a hard runtime dependency despite being declared optional. The default renderer is still reachable through `ask()`'s own lazy fallback.
+- A task's `run()` now receives `answers`, the same object `when()` sees, holding every question's answer and every earlier task's result collected so far.
+- An empty text/password answer to a `.default(x)` question now resolves to `x` instead of `undefined` - the default is parsed through the schema rather than short-circuited past it.
+
 ## [0.1.0] - 2026-08-15
 
 ### Added

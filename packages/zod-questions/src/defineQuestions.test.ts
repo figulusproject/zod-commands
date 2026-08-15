@@ -95,6 +95,25 @@ describe("defineQuestions", () => {
     expect(result).toEqual({ success: true, data: { nickname: undefined } });
   });
 
+  it("resolves a blank answer to a defaulted question as the configured default", async () => {
+    const flow = defineQuestions({
+      questions: {
+        registry: {
+          schema: z.string().default("https://registry.npmjs.org"),
+          message: "Registry?",
+        },
+      },
+    });
+
+    const renderer = createCannedRenderer([""]);
+    const result = await flow.ask({ renderer });
+
+    expect(result).toEqual({
+      success: true,
+      data: { registry: "https://registry.npmjs.org" },
+    });
+  });
+
   it("fails with a validation error when a canned answer is invalid (nobody to reprompt)", async () => {
     const flow = defineQuestions({
       questions: {

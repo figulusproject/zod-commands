@@ -26,4 +26,3 @@ export type {
   TaskOpts,
 } from "./renderer.js";
 export { createCannedRenderer, CANCELLED } from "./renderer.js";
-export { clackRenderer } from "./clackRenderer.js";

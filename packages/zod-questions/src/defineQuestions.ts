@@ -141,7 +141,13 @@ async function askOne(
   if (raw === CANCELLED) return { outcome: "cancelled" };
 
   if ((widget === "text" || widget === "password") && raw === "" && optional) {
-    return { outcome: "value", value: undefined };
+    // Parsed through the schema rather than short-circuited to undefined, so a
+    // .default(x) schema actually applies x on empty input, per normal zod semantics.
+    const result = descriptor.schema.safeParse(undefined);
+    return {
+      outcome: "value",
+      value: result.success ? result.data : undefined,
+    };
   }
 
   const result = descriptor.schema.safeParse(raw);
@@ -163,11 +169,12 @@ const TIMED_OUT = Symbol("zod-questions/timed-out");
 async function askTask(
   descriptor: TaskDescriptor,
   renderer: Renderer,
+  answers: Record<string, unknown>,
 ): Promise<AskTaskOutcome> {
   const controller = new AbortController();
   const taskPromise = renderer.task({
     message: descriptor.message,
-    run: descriptor.run,
+    run: (ctx) => descriptor.run({ ...ctx, answers }),
     signal: controller.signal,
   });
   // A timeout wins the race below without waiting on taskPromise again - swallow a
@@ -307,7 +314,7 @@ export function defineQuestions<
       const descriptor = tasks[key]!;
       if (descriptor.when && !descriptor.when(answers)) continue;
 
-      const outcome = await askTask(descriptor, renderer);
+      const outcome = await askTask(descriptor, renderer, answers);
       if (outcome.outcome === "cancelled") {
         return {
           success: false,

@@ -4,6 +4,7 @@ import type {
   CliDefinition,
   InferFlags,
   InferPositionals,
+  PositionalsInput,
 } from "./defineCli.js";
 import {
   buildParseArgsOptions,
@@ -23,16 +24,46 @@ import type {
 } from "./types.js";
 import { buildUsage } from "./usage.js";
 
-export type SubCommand = CliDefinition<any, any> | CommandsDefinition<any>;
+/**
+ * Pairs a subcommand with a schema to run in place of its own `flagsSchema`,
+ * mirroring `CliDefinition.parse`'s `overrideFlagsSchema` argument for cross-field
+ * validation (id normalization, one flag requiring another, etc.) that survives
+ * being dispatched to from `defineCommands()`.
+ */
+export interface CommandEntry<
+  TFlags extends FlagDescriptors = FlagDescriptors,
+  TPositionalsInput extends PositionalsInput | undefined = undefined,
+  TOut = unknown,
+> {
+  cli: CliDefinition<TFlags, TPositionalsInput>;
+  schema: z.ZodType<TOut, any>;
+}
+
+export type SubCommand =
+  | CliDefinition<any, any>
+  | CommandsDefinition<any>
+  | CommandEntry<any, any, any>;
 
 export type CommandDescriptors = Record<string, SubCommand>;
 
 type ChildSuccess<TSub> =
-  TSub extends CliDefinition<infer TF, infer TP>
-    ? { success: true; data: InferFlags<TF>; positionals: InferPositionals<TP> }
-    : TSub extends CommandsDefinition<infer TR>
-      ? Extract<TR, { success: true }>
-      : never;
+  TSub extends CommandEntry<any, infer TP, infer TOut>
+    ? { success: true; data: TOut; positionals: InferPositionals<TP> }
+    : TSub extends CliDefinition<infer TF, infer TP>
+      ? {
+          success: true;
+          data: InferFlags<TF>;
+          positionals: InferPositionals<TP>;
+        }
+      : TSub extends CommandsDefinition<infer TR>
+        ? Extract<TR, { success: true }>
+        : never;
+
+function isCommandEntry(
+  child: SubCommand,
+): child is CommandEntry<any, any, any> {
+  return "cli" in child && "schema" in child;
+}
 
 // Prepends this level's command name/global flags to whatever the resolved child already carries,
 // so a command tree of any depth surfaces a single flat `command` path and merged `global` object.
@@ -338,7 +369,11 @@ export function defineCommands<
     }
 
     const { name, child, rest } = resolvedCommand;
-    const childResult = child.parse(rest) as {
+    const childResult = (
+      isCommandEntry(child)
+        ? child.cli.parse(rest, child.schema)
+        : child.parse(rest)
+    ) as {
       success: boolean;
       data?: unknown;
       positionals?: unknown;
@@ -385,7 +420,11 @@ export function defineCommands<
     }
 
     const { name, child, rest } = resolvedCommand;
-    const childResult = child.parseOrExit(rest) as {
+    const childResult = (
+      isCommandEntry(child)
+        ? child.cli.parseOrExit(rest, child.schema)
+        : child.parseOrExit(rest)
+    ) as {
       data: unknown;
       positionals: unknown;
       command?: string[];

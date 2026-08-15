@@ -367,3 +367,72 @@ describe("defineCommands - defaultCommand", () => {
     ).toThrow(/defaultCommand "bogus" is not one of the defined commands/);
   });
 });
+
+describe("defineCommands - per-command override schema", () => {
+  const rangeCli = defineCli({
+    flags: {
+      min: { schema: z.coerce.number().optional() },
+      max: { schema: z.coerce.number().optional() },
+    },
+  });
+  const rangeSchema = rangeCli.flagsSchema.transform((raw, ctx) => {
+    if (raw.min !== undefined && raw.max !== undefined && raw.min > raw.max) {
+      ctx.addIssue({ code: "custom", message: "--min must be <= --max" });
+      return z.NEVER;
+    }
+    return raw;
+  });
+
+  const cli = defineCommands({
+    commands: {
+      range: { cli: rangeCli, schema: rangeSchema },
+      status: defineCli({ flags: {} }),
+    },
+  });
+
+  it("runs the override schema instead of the child's own flagsSchema", () => {
+    const result = cli.parse(["range", "--min", "10", "--max", "5"]);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.command).toEqual(["range"]);
+      expect(result.error.message).toMatch(/--min must be <= --max/);
+    }
+  });
+
+  it("passes through when the override schema's constraint holds", () => {
+    const result = cli.parse(["range", "--min", "5", "--max", "10"]);
+    expect(result).toEqual({
+      success: true,
+      command: ["range"],
+      global: {},
+      data: { min: 5, max: 10 },
+      positionals: [],
+    });
+  });
+
+  it("leaves plain (non-entry) subcommands dispatching as before", () => {
+    const result = cli.parse(["status"]);
+    expect(result).toEqual({
+      success: true,
+      command: ["status"],
+      global: {},
+      data: {},
+      positionals: [],
+    });
+  });
+
+  it("applies the override schema through parseOrExit too", () => {
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation(((): never => {
+      throw new Error("process.exit called");
+    }) as never);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    expect(() =>
+      cli.parseOrExit(["range", "--min", "10", "--max", "5"]),
+    ).toThrow("process.exit called");
+    expect(errorSpy.mock.calls[0]?.[0]).toMatch(/--min must be <= --max/);
+
+    exitSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
+});

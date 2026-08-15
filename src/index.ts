@@ -7,6 +7,7 @@ export type {
   CommandDescriptors,
   CommandsParseResult,
   SubCommand,
+  CommandEntry,
 } from "./commands.js";
 export type {
   FlagDescriptor,

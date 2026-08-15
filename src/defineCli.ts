@@ -146,7 +146,7 @@ export function toCliIssues(error: z.ZodError): CliIssue[] {
   }));
 }
 
-type PositionalsInput = z.ZodType | PositionalsDescriptor;
+export type PositionalsInput = z.ZodType | PositionalsDescriptor;
 
 type SchemaOf<TPositionalsInput> =
   TPositionalsInput extends PositionalsDescriptor<infer T>

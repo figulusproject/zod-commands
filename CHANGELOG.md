@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- A `defineCommands()` `commands` entry can now be `{ cli, schema }` instead of a bare `defineCli()`, so `schema` runs in place of `cli`'s own `flagsSchema` during dispatch. This carries `overrideFlagsSchema`-style cross-field validation through to a subcommand once it's registered under `defineCommands()`, which previously had no way to receive it.
+
 ## [1.1.2] - 2026-08-15
 
 ### Added

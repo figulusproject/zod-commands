@@ -64,3 +64,30 @@ const cli = defineCommands({
 cli.parse(["remote", "add", "--url", "https://example.com"]);
 // { success: true, command: ["remote", "add"], global: {}, data: { url: "https://example.com" }, positionals: [] }
 ```
+
+**Per-command override schema**: a `commands` entry can be `{ cli, schema }` instead of a bare `defineCli()`, where `schema` runs in place of `cli`'s own `flagsSchema` - the same role `overrideFlagsSchema` plays in `cli.parse(argv, overrideFlagsSchema)`. This carries cross-field validation (a `.transform()` on `cli.flagsSchema`, for example) through to the subcommand once it's registered under `defineCommands()`:
+
+```ts
+const rangeCli = defineCli({
+  flags: {
+    min: { schema: z.coerce.number().optional() },
+    max: { schema: z.coerce.number().optional() },
+  },
+});
+const rangeSchema = rangeCli.flagsSchema.transform((raw, ctx) => {
+  if (raw.min !== undefined && raw.max !== undefined && raw.min > raw.max) {
+    ctx.addIssue({ code: "custom", message: "--min must be <= --max" });
+    return z.NEVER;
+  }
+  return raw;
+});
+
+const cli = defineCommands({
+  commands: {
+    range: { cli: rangeCli, schema: rangeSchema },
+  },
+});
+
+cli.parse(["range", "--min", "10", "--max", "5"]);
+// { success: false, command: ["range"], error: { message: "--min must be <= --max", ... } }
+```

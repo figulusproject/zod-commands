@@ -4,7 +4,16 @@ on:
   push:
     tags:
       - "v*.*.*"
+      - "v*.*.*/*"
   workflow_dispatch:
+    inputs:
+      workspace:
+        description: "Package to publish (leave blank to publish all)"
+        type: choice
+        options:
+          - ""
+          - "zod-commands"
+        default: ""
 
 permissions:
   id-token: write
@@ -30,4 +39,11 @@ jobs:
         run: npm run build
 
       - name: Publish
-        run: npm publish --access public
+        run: |
+          if [[ "$GITHUB_REF_NAME" == v*.*.*/* ]]; then
+            npm publish --workspace="${GITHUB_REF_NAME#*/}" --access public
+          elif [ -n "${{ inputs.workspace }}" ]; then
+            npm publish --workspace="${{ inputs.workspace }}" --access public
+          else
+            npm publish --workspaces --access public
+          fi

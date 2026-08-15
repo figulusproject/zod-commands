@@ -1,6 +1,9 @@
 - [Home](/)
-- [Usage](usage.md)
-- [Positionals](positionals.md)
-- [Flag groups](flag-groups.md)
-- [Subcommands](subcommands.md)
+
+- zod-commands
+  - [Usage](zod-commands/usage.md)
+  - [Positionals](zod-commands/positionals.md)
+  - [Flag groups](zod-commands/flag-groups.md)
+  - [Subcommands](zod-commands/subcommands.md)
+
 - [Development](development.md)
